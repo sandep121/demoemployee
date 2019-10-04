@@ -1,10 +1,10 @@
-insert into DESIGNATION (LVL_ID, ROLE) values(1,'Director');
-insert into DESIGNATION (LVL_ID, ROLE) values(2,'Manager');
-insert into DESIGNATION (LVL_ID, ROLE) values(3,'Lead');
-insert into DESIGNATION (LVL_ID, ROLE) values(4,'DevOps');
-insert into DESIGNATION (LVL_ID, ROLE) values(4,'Developer');
+insert into DESIGNATION (LVL_ID, ROLE) values(1,'DIRECTOR');
+insert into DESIGNATION (LVL_ID, ROLE) values(2,'MANAGER');
+insert into DESIGNATION (LVL_ID, ROLE) values(3,'LEAD');
+insert into DESIGNATION (LVL_ID, ROLE) values(4,'DEVOPS');
+insert into DESIGNATION (LVL_ID, ROLE) values(4,'DEVELOPER');
 insert into DESIGNATION (LVL_ID, ROLE) values(4,'QA');
-insert into DESIGNATION (LVL_ID, ROLE) values(5,'intern');
+insert into DESIGNATION (LVL_ID, ROLE) values(5,'INTERN');
 
 insert into EMPLOYEE (EMP_NAME, MANAGER_ID, DSGN_ID) values('Thor',8,1);
 insert into EMPLOYEE (EMP_NAME, MANAGER_ID, DSGN_ID) values('Iron Man',1,2);
