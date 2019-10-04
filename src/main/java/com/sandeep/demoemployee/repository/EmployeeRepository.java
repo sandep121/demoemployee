@@ -14,4 +14,7 @@ public interface EmployeeRepository extends CrudRepository<Employee, Integer>
     boolean existsAllByEmpIdIs(int id);
     //@Query("SELECT a FROM Employee a WHERE a.title=:title and a.category=:category")
     //List<Employee> fetchEmployee(@Param("title") String title, @Param("category") String category);
+    List<Employee> findAllByManagerId(int id);
+    //List<Employee> findAllByManagerIdOrderByDesignation_lvlAscEmpNameAsc(int id);
+
 }

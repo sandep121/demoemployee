@@ -4,13 +4,11 @@ import com.sandeep.demoemployee.entity.CrudeEmployee;
 import com.sandeep.demoemployee.entity.Employee;
 import com.sandeep.demoemployee.repository.DesignationRepository;
 import com.sandeep.demoemployee.repository.EmployeeRepository;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class EmployeeService
@@ -42,8 +40,23 @@ public class EmployeeService
         return employee;
     }
 
+    public List getAllByManagerId(int id)
+    {
+        return employeeRepository.findAllByManagerId(id);
+    }
 
-    public List findAllByEmpId(int id)
+    public Employee getEmployeeById(int id)
+    {
+        return this.findAllByEmpId(id).get(0);
+    }
+
+    public List getColleague(int id)
+    {
+        return employeeRepository.findAllByManagerId(this.getEmployeeById(id).getManagerId());
+    }
+
+
+    public List<Employee> findAllByEmpId(int id)
     {
         List <Employee> emp=new ArrayList<>();
         emp.add(employeeRepository.findById(id).orElseGet(Employee::new));
@@ -52,5 +65,11 @@ public class EmployeeService
 
     public void addEmployee(Employee employee) {
         employeeRepository.save(employee);
+    }
+
+    public List<Employee> getManager(int id) {
+        List <Employee> manager=new ArrayList<>();
+        manager.add(this.getEmployeeById(this.getEmployeeById(id).getManagerId()));
+        return manager;
     }
 }
