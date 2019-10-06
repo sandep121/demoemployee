@@ -42,7 +42,14 @@ public class EmployeeService
 
     public List getAllByManagerId(int id)
     {
-        return employeeRepository.findAllByManagerId(id);
+        if( id != 0 )
+        {
+            return employeeRepository.findAllByManagerId(id);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public Employee getEmployeeById(int id)
@@ -50,9 +57,17 @@ public class EmployeeService
         return this.findAllByEmpId(id).get(0);
     }
 
-    public List getColleague(int id)
+    public List getColleague(Integer id)
     {
-        return employeeRepository.findAllByManagerId(this.getEmployeeById(id).getManagerId());
+        id=this.getEmployeeById(id).getManagerId();
+        if( id != null )
+        {
+            return employeeRepository.findAllByManagerId(id);
+        }
+        else
+        {
+            return null;
+        }
     }
 
 
@@ -69,7 +84,13 @@ public class EmployeeService
 
     public List<Employee> getManager(int id) {
         List <Employee> manager=new ArrayList<>();
-        manager.add(this.getEmployeeById(this.getEmployeeById(id).getManagerId()));
-        return manager;
+        Integer managerId=this.getEmployeeById(id).getManagerId();
+        if(managerId!=null)
+         {
+            manager.add(this.getEmployeeById(managerId));
+            return manager;
+         }
+        else
+            return null;
     }
 }

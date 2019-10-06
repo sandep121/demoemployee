@@ -71,6 +71,8 @@ public class EmployeeController
         Employee employee=employeeService.getEmpFromCrudeEmp(crudeEmployee);
         if(!crudeEmployee.isReplace())
         {
+            Employee emp=new Employee(employee);
+            employeeService.addEmployee(emp);
             return this.addEmployee(crudeEmployee);
         }
         else if(!employeeService.employeeExists(employee.getEmpId()))

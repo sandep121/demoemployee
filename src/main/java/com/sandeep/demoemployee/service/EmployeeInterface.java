@@ -11,9 +11,9 @@ public interface EmployeeInterface {
 
     void setEmpId(int empId);
 
-    int getManagerId();
+    Integer getManagerId();
 
-    void setManagerId(int managerId);
+    void setManagerId(Integer managerId);
 
     String getEmpName();
 

@@ -3,6 +3,7 @@ package com.sandeep.demoemployee.entity;
 import com.fasterxml.jackson.annotation.*;
 import com.sandeep.demoemployee.service.EmployeeInterface;
 import org.hibernate.annotations.ManyToAny;
+import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
 
@@ -12,7 +13,8 @@ public class Employee implements EmployeeInterface {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private int empId;
     @Column
-    private int managerId;
+    @Nullable
+    private Integer managerId;
     @Column
     private String empName;
     @ManyToOne
@@ -33,6 +35,14 @@ public class Employee implements EmployeeInterface {
         this.empId = empId;
         this.managerId = managerId;
         this.empName = empName;
+    }
+
+    public Employee(Employee emp)
+    {
+        this.setDesignation(emp.getDesignation());
+        this.setEmpName(emp.getEmpName());
+        this.setEmpId(emp.getEmpId());
+        this.setManagerId(emp.getManagerId());
     }
 
     public Employee(int empId, int managerId, String empName, Designation designation) {
@@ -56,12 +66,12 @@ public class Employee implements EmployeeInterface {
     }
 
     @Override
-    public int getManagerId() {
+    public Integer getManagerId() {
         return managerId;
     }
 
     @Override
-    public void setManagerId(int managerId) {
+    public void setManagerId(Integer managerId) {
         this.managerId = managerId;
     }
 
