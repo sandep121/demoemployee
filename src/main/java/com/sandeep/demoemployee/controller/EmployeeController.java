@@ -110,7 +110,7 @@ public class EmployeeController
             return new ResponseEntity("You cannot fire the director!!!",HttpStatus.FORBIDDEN);
         else if(employeeService.deleteEmployee(id))
         {
-            return new ResponseEntity("we are working on it", HttpStatus.OK);
+            return new ResponseEntity("Deleted", HttpStatus.OK);
         }
         return new ResponseEntity("we are working on it", HttpStatus.OK);
     }

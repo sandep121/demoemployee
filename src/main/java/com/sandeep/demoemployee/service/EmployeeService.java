@@ -94,14 +94,13 @@ public class EmployeeService
             return null;
     }
 
-    public Boolean deleteEmployee(int id) {
+    public Boolean deleteEmployee(int id)
+    {
         Employee employee=this.getEmployeeById(id);
-        Integer designationId=employee.getDesignation().getDsgnId();
-        if(designationId==null)
-        {
-            return false;
-        }
-
-        return false;
+        List <Employee> children=this.getAllByManagerId(id);
+        children.forEach((emp)->emp.setManagerId(employee.getManagerId()));
+        children.forEach(this::addEmployee);
+        employeeRepository.delete(employee);
+        return true;
     }
 }
