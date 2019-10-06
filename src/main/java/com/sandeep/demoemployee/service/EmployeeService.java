@@ -93,4 +93,15 @@ public class EmployeeService
         else
             return null;
     }
+
+    public Boolean deleteEmployee(int id) {
+        Employee employee=this.getEmployeeById(id);
+        Integer designationId=employee.getDesignation().getDsgnId();
+        if(designationId==null)
+        {
+            return false;
+        }
+
+        return false;
+    }
 }
