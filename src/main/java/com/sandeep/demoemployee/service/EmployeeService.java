@@ -20,9 +20,7 @@ public class EmployeeService
 
     public List<Employee> getAllEmployees()
     {
-        List employee=new ArrayList<Employee>();
-        employee.addAll(employeeRepository.findAllByOrderByDesignation_lvlIdAscEmpNameAsc());
-        return employee;
+        return new ArrayList<>(employeeRepository.findAllByOrderByDesignation_lvlIdAscEmpNameAsc());
     }
 
     public boolean employeeExists(int id)
@@ -62,7 +60,7 @@ public class EmployeeService
         return this.findAllByEmpId(id).get(0);
     }
 
-    public List getColleague(Integer id)
+    public List<Employee> getColleague(Integer id)
     {
         id=this.getEmployeeById(id).getManagerId();
         if (null == id) {
@@ -122,5 +120,9 @@ public class EmployeeService
     public Employee getEmployeeByUniqueId(short random)
     {
         return employeeRepository.findByUniqueId(random);
+    }
+
+    public long getTotalEmployee() {
+        return employeeRepository.count();
     }
 }
