@@ -1,8 +1,7 @@
 package com.sandeep.demoemployee.entity;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sandeep.demoemployee.service.EmployeeInterface;
-import org.hibernate.annotations.ManyToAny;
 import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
@@ -11,12 +10,16 @@ import javax.persistence.*;
 public class Employee implements EmployeeInterface {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private int empId;
+    private Integer empId;
     @Column
     @Nullable
     private Integer managerId;
     @Column
     private String empName;
+    @Column
+    @Nullable
+    @JsonIgnore
+    private Short uniqueId;
     @ManyToOne
     @JoinColumn(name = "DSGN_ID")
     private Designation designation;
@@ -31,32 +34,28 @@ public class Employee implements EmployeeInterface {
         this.designation = designation;
     }
 
-    public Employee(int empId, int managerId, String empName) {
-        this.empId = empId;
+    public Employee(@Nullable Integer managerId, String empName, @Nullable Short uniqueId, Designation designation) {
         this.managerId = managerId;
         this.empName = empName;
-    }
-
-    public Employee(Employee emp)
-    {
-        this.setDesignation(emp.getDesignation());
-        this.setEmpName(emp.getEmpName());
-        this.setEmpId(emp.getEmpId());
-        this.setManagerId(emp.getManagerId());
-    }
-
-    public Employee(int empId, int managerId, String empName, Designation designation) {
-        this.empId = empId;
-        this.managerId = managerId;
-        this.empName = empName;
+        this.uniqueId = uniqueId;
         this.designation = designation;
     }
+
+    public Employee(Employee emp) {
+        this.empId = emp.getEmpId();
+        this.managerId = emp.getManagerId();
+        this.empName = emp.getEmpName();
+        this.uniqueId = emp.getUniqueId();
+        this.designation = emp.getDesignation();
+    }
+
+
 
     public Employee() {
     }
 
     @Override
-    public int getEmpId() {
+    public Integer getEmpId() {
         return empId;
     }
 
@@ -83,5 +82,14 @@ public class Employee implements EmployeeInterface {
     @Override
     public void setEmpName(String empName) {
         this.empName = empName;
+    }
+
+    @Nullable
+    public Short getUniqueId() {
+        return uniqueId;
+    }
+
+    public void setUniqueId(@Nullable Short uniqueId) {
+        this.uniqueId = uniqueId;
     }
 }

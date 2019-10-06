@@ -25,16 +25,15 @@ public class EmployeeValidationService
 
     public Boolean parentIsValid(Employee emp)
     {
-        int managerId=emp.getManagerId();
-        Employee manager=(Employee) employeeService.findAllByEmpId(managerId).get(0);
-        float managerLvl=manager.getDesignation().getLvlId();
-        float empLvl=emp.getDesignation().getLvlId();
-        if(managerLvl<empLvl)
+        Integer managerId=emp.getManagerId();
+        if(managerId!=null && employeeRepository.existsAllByEmpIdIs(managerId))
         {
-            return true;
+            Employee manager=(Employee) employeeService.findAllByEmpId(managerId).get(0);
+            float managerLvl=manager.getDesignation().getLvlId();
+            float empLvl=emp.getDesignation().getLvlId();
+            return managerLvl < empLvl;
         }
-        else
-        return false;
+        else return emp.getDesignation().getDsgnId() == 1;
     }
 
     public boolean validateEntry(CrudeEmployee crudeEmployee)

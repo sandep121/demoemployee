@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/employee")
+@RequestMapping("/employees")
 
 @Api(value="Employee Management System")
 public class EmployeeController
@@ -41,13 +41,13 @@ public class EmployeeController
             @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
             @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
     })
-    @RequestMapping("/")
-    public List getAllEmployee()
+    @GetMapping("/")
+    public List<Employee> getAllEmployee()
     {
         return employeeService.getAllEmployees();
     }
 
-    @RequestMapping("/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity findAllByEmpId(Model model, @PathVariable int id)
     {
         Map<String,List<Employee>> employeeResponse=new HashMap<>();
@@ -61,57 +61,65 @@ public class EmployeeController
     }
 
     @PostMapping
-    public ResponseEntity addEmployee(@RequestBody CrudeEmployee crudeEmployee)
+    public ResponseEntity<String> addEmployee(@RequestBody CrudeEmployee crudeEmployee)
     {
+        //crude is needed for designation field
         Employee employee=employeeService.getEmpFromCrudeEmp(crudeEmployee);
         boolean isValidEmpId= !validationService.employeeAlreadyExists(employee.getEmpId());
         boolean isValidParent=validationService.parentIsValid(employee);
         if(!isValidEmpId)
         {
-            return new ResponseEntity<>("Employee already exists", HttpStatus.CONFLICT);
+            return new ResponseEntity<>("Employee already exists.\nYou can keep empId field empty", HttpStatus.CONFLICT);
         }
         else if(!isValidParent)
         {
-            return new ResponseEntity("Organisation hierarchy violated", HttpStatus.CONFLICT);
+            return new ResponseEntity<>("Organisation hierarchy violated", HttpStatus.CONFLICT);
         }
         else
             employeeService.addEmployee(employee);
 
-        return new ResponseEntity<>("we are working on it",HttpStatus.OK);
+        return new ResponseEntity<>("Employee added successfully",HttpStatus.OK);
     }
     @PutMapping
-    public ResponseEntity updateEmployee(@RequestBody CrudeEmployee crudeEmployee)
+    public ResponseEntity<String> updateEmployee(@RequestBody CrudeEmployee crudeEmployee)
     {
-        Employee employee=employeeService.getEmpFromCrudeEmp(crudeEmployee);
-        if(!crudeEmployee.isReplace())
+        Employee empOld=employeeService.getEmpFromCrudeEmp(crudeEmployee);
+        if(!employeeService.employeeExists(empOld.getEmpId()))
         {
-            Employee emp=new Employee(employee);
-            employeeService.addEmployee(emp);
-            return this.addEmployee(crudeEmployee);
+            return new ResponseEntity<>("Employee not found", HttpStatus.NOT_FOUND);
         }
-        else if(!employeeService.employeeExists(employee.getEmpId()))
+        else if(!validationService.parentIsValid(empOld))
         {
-            return new ResponseEntity("Employee not found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Invalid superior",HttpStatus.CONFLICT);
+        }
+        else if(crudeEmployee.isReplace())
+        {
+            Employee empNew=new Employee(empOld);
+            empNew.setEmpId(0);
+            employeeService.updateManager(empOld.getEmpId(),employeeService.addEmployee(empNew));
+            employeeService.deleteEmployee(empOld.getEmpId());
+            return new ResponseEntity<>("Employee replaced successfully",HttpStatus.OK);
         }
         else
         {
+            employeeService.addEmployee(empOld);
+            return new ResponseEntity<>("Employee updated successfully",HttpStatus.OK);
         }
-        return new ResponseEntity("we are working on it", HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity deleteEmployee(@PathVariable int id)
+    public ResponseEntity<String> deleteEmployee(@PathVariable int id)
     {
         if(!employeeService.employeeExists(id))
         {
-            return new ResponseEntity("The employee does not exist", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("The employee does not exist", HttpStatus.NOT_FOUND);
         }
         else if(employeeService.getEmployeeById(id).getDesignation().getDsgnId()==1)
-            return new ResponseEntity("You cannot fire the director!!!",HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>("You cannot fire the director!!!",HttpStatus.FORBIDDEN);
         else if(employeeService.deleteEmployee(id))
         {
-            return new ResponseEntity("Deleted", HttpStatus.OK);
+            return new ResponseEntity<>("Deleted", HttpStatus.OK);
         }
-        return new ResponseEntity("we are working on it", HttpStatus.OK);
+        return new ResponseEntity<>("Unknown error occured", HttpStatus.OK);
     }
 }

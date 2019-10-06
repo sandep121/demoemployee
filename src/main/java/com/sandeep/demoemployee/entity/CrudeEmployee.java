@@ -1,13 +1,15 @@
 package com.sandeep.demoemployee.entity;
 
+import org.springframework.lang.Nullable;
+
 public class CrudeEmployee
 {
-    private int empId;
-    private int managerId;
+    private Integer empId;
+    private Integer managerId;
     private String empName;
     private String designation;
     private boolean replace;
-    public CrudeEmployee(int empId, int managerId, String empName, String designation) {
+    public CrudeEmployee(Integer empId, Integer managerId, String empName, String designation) {
         this.empId = empId;
         this.managerId = managerId;
         this.empName = empName;
@@ -31,19 +33,19 @@ public class CrudeEmployee
         this.replace = replace;
     }
 
-    public int getEmpId() {
+    public Integer getEmpId() {
         return empId;
     }
 
-    public void setEmpId(int empId) {
+    public void setEmpId(Integer empId) {
         this.empId = empId;
     }
 
-    public int getManagerId() {
+    public Integer getManagerId() {
         return managerId;
     }
 
-    public void setManagerId(int managerId) {
+    public void setManagerId(Integer managerId) {
         this.managerId = managerId;
     }
 

@@ -21,7 +21,7 @@ public class EmployeeService
     public List<Employee> getAllEmployees()
     {
         List employee=new ArrayList<Employee>();
-        employeeRepository.findAllByOrderByDesignation_lvlIdAscEmpNameAsc().forEach(employee::add);
+        employee.addAll(employeeRepository.findAllByOrderByDesignation_lvlIdAscEmpNameAsc());
         return employee;
     }
 
@@ -33,14 +33,17 @@ public class EmployeeService
     public Employee getEmpFromCrudeEmp(CrudeEmployee crudeEmployee)
     {
         Employee employee=new Employee();
-        employee.setEmpId(crudeEmployee.getEmpId());
+        if(crudeEmployee.getEmpId()==null)
+            employee.setEmpId(0);
+        else
+            employee.setEmpId(crudeEmployee.getEmpId());
         employee.setManagerId(crudeEmployee.getManagerId());
         employee.setEmpName(crudeEmployee.getEmpName());
         employee.setDesignation(designationRepository.findAllByRoleLike(crudeEmployee.getDesignation().toUpperCase()).get(0));
         return employee;
     }
 
-    public List getAllByManagerId(int id)
+    private List<Employee> getAllByManagerId(int id)
     {
         if( id != 0 )
         {
@@ -52,6 +55,8 @@ public class EmployeeService
         }
     }
 
+
+
     public Employee getEmployeeById(int id)
     {
         return this.findAllByEmpId(id).get(0);
@@ -60,13 +65,10 @@ public class EmployeeService
     public List getColleague(Integer id)
     {
         id=this.getEmployeeById(id).getManagerId();
-        if( id != null )
-        {
-            return employeeRepository.findAllByManagerId(id);
-        }
-        else
-        {
+        if (null == id) {
             return null;
+        } else {
+            return employeeRepository.findAllByManagerId(id);
         }
     }
 
@@ -78,8 +80,15 @@ public class EmployeeService
         return emp;
     }
 
-    public void addEmployee(Employee employee) {
+    public int addEmployee(Employee employee)
+    {
+        short random = (short) (Math.random());
+        employee.setUniqueId(random);
         employeeRepository.save(employee);
+        employee=this.getEmployeeByUniqueId(random);
+        employee.setUniqueId(null);
+        employeeRepository.save(employee);
+        return employee.getEmpId();
     }
 
     public List<Employee> getManager(int id) {
@@ -94,13 +103,24 @@ public class EmployeeService
             return null;
     }
 
+    public void updateManager(Integer oldId,Integer newId)
+    {
+        List <Employee> children=this.getAllByManagerId(oldId);
+        assert children != null;
+        children.forEach((emp)->emp.setManagerId(newId));
+        children.forEach(this::addEmployee);
+    }
+
     public Boolean deleteEmployee(int id)
     {
         Employee employee=this.getEmployeeById(id);
-        List <Employee> children=this.getAllByManagerId(id);
-        children.forEach((emp)->emp.setManagerId(employee.getManagerId()));
-        children.forEach(this::addEmployee);
+        this.updateManager(id,employee.getManagerId());
         employeeRepository.delete(employee);
         return true;
+    }
+
+    public Employee getEmployeeByUniqueId(short random)
+    {
+        return employeeRepository.findByUniqueId(random);
     }
 }

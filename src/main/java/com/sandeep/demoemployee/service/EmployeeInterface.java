@@ -7,7 +7,7 @@ public interface EmployeeInterface {
 
     void setDesignation(Designation designation);
 
-    int getEmpId();
+    Integer getEmpId();
 
     void setEmpId(int empId);
 
