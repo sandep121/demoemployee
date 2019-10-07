@@ -47,6 +47,11 @@ public class EmployeeController
         else
             return new ResponseEntity<>( "Employee does not exist",HttpStatus.NOT_FOUND);
     }
+    @GetMapping("/CountDsgId={id}")
+    public ResponseEntity countByDesignationId(@PathVariable int id)
+    {
+        return new ResponseEntity<>(employeeService.getTotalEmployeeByDesignation(id),HttpStatus.OK);
+    }
 
     @PostMapping
     public ResponseEntity<String> addEmployee(@RequestBody CrudeEmployee crudeEmployee)
@@ -57,11 +62,15 @@ public class EmployeeController
         boolean isValidParent=validationService.parentIsValid(employee);
         if(!isValidEmpId)
         {
-            return new ResponseEntity<>("Employee already exists.\nYou can keep empId field empty", HttpStatus.CONFLICT);
+            return new ResponseEntity<>("Employee already exists.\nYou can keep empId field empty", HttpStatus.BAD_REQUEST);
         }
         else if(!isValidParent)
         {
-            return new ResponseEntity<>("Organisation hierarchy violated", HttpStatus.CONFLICT);
+            return new ResponseEntity<>("Invalid superior", HttpStatus.BAD_REQUEST);
+        }
+        else if(employee.getDesignation().getDsgnId()==1 && employeeService.getTotalEmployeeByDesignation(1)!=0)
+        {
+            return new ResponseEntity<>("One Director is enough for the organisation", HttpStatus.FORBIDDEN);
         }
         else
             employeeService.addEmployee(employee);
@@ -71,7 +80,9 @@ public class EmployeeController
     @PutMapping
     public ResponseEntity<String> updateEmployee(@RequestBody CrudeEmployee crudeEmployee)
     {
+        System.out.println(crudeEmployee.isReplace());
         Employee empOld=employeeService.getEmpFromCrudeEmp(crudeEmployee);
+        //check if the employee exists or not
         if(!employeeService.employeeExists(empOld.getEmpId()))
         {
             return new ResponseEntity<>("Employee not found", HttpStatus.NOT_FOUND);
@@ -83,16 +94,21 @@ public class EmployeeController
         else if(crudeEmployee.isReplace())
         {
             Employee empNew=new Employee(empOld);
+            if(employeeService.getEmployeeById(empOld.getEmpId()).getDesignation().getDsgnId() != empNew.getDesignation().getDsgnId()
+                    && (empNew.getDesignation().getDsgnId()==1
+                    || employeeService.getEmployeeById(empOld.getEmpId()).getDesignation().getDsgnId() == 1))
+                return new ResponseEntity<>("There should be one and only one Director in the organisation", HttpStatus.BAD_REQUEST);
+            System.out.println("old dsgnId = "+ employeeService.getEmployeeById(empOld.getEmpId()).getDesignation().getDsgnId() + "\n new dsgnId = " + empNew.getDesignation().getDsgnId());
             empNew.setEmpId(0);
             employeeService.updateManager(empOld.getEmpId(),employeeService.addEmployee(empNew));
             employeeService.deleteEmployee(empOld.getEmpId());
             return new ResponseEntity<>("Employee replaced successfully",HttpStatus.OK);
         }
-        else
+        else if(employeeService.updateEmployee(empOld, employeeService.getEmployeeById(empOld.getEmpId())))
         {
-            employeeService.addEmployee(empOld);
             return new ResponseEntity<>("Employee updated successfully",HttpStatus.OK);
         }
+        return new ResponseEntity<>("Invalid Request",HttpStatus.BAD_REQUEST);
     }
 
     @DeleteMapping("/{id}")

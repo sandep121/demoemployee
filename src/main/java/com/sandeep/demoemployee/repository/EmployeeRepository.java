@@ -17,5 +17,6 @@ public interface EmployeeRepository extends CrudRepository<Employee, Integer>
     List<Employee> findAllByManagerId(int id);
     Employee findByUniqueId(Short id);
     //List<Employee> findAllByManagerIdOrderByDesignation_lvlAscEmpNameAsc(int id);
-
+    Long countAllByDesignation_DsgnId(int id);
+    Employee findByEmpId(Integer id);
 }

@@ -12,9 +12,10 @@ public class Designation
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @JsonIgnore
-    int dsgnId;
-    String role;
-    float lvlId;
+    private int dsgnId;
+    private String role;
+    @JsonIgnore
+    private float lvlId;
 
     public Designation(int dsgnId, String role, float lvlId) {
         this.dsgnId = dsgnId;

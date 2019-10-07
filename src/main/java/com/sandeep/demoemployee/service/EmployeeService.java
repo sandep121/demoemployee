@@ -17,7 +17,8 @@ public class EmployeeService
     private EmployeeRepository employeeRepository;
     @Autowired
     private DesignationRepository designationRepository;
-
+    @Autowired
+    private EmployeeValidationService employeeValidationService;
     public List<Employee> getAllEmployees()
     {
         return new ArrayList<>(employeeRepository.findAllByOrderByDesignation_lvlIdAscEmpNameAsc());
@@ -41,7 +42,7 @@ public class EmployeeService
         return employee;
     }
 
-    private List<Employee> getAllByManagerId(int id)
+    public List<Employee> getAllByManagerId(int id)
     {
         if( id != 0 )
         {
@@ -53,11 +54,14 @@ public class EmployeeService
         }
     }
 
-
+    public Long getTotalEmployeeByDesignation(Integer id)
+    {
+        return employeeRepository.countAllByDesignation_DsgnId(id);
+    }
 
     public Employee getEmployeeById(int id)
     {
-        return this.findAllByEmpId(id).get(0);
+        return employeeRepository.findByEmpId(id);
     }
 
     public List<Employee> getColleague(Integer id)
@@ -77,13 +81,13 @@ public class EmployeeService
         emp.add(employeeRepository.findById(id).orElseGet(Employee::new));
         return emp;
     }
-
+/****** to be improved      *****/
     public int addEmployee(Employee employee)
     {
         short random = (short) (Math.random());
         employee.setUniqueId(random);
         employeeRepository.save(employee);
-        employee=this.getEmployeeByUniqueId(random);
+        employee=employeeRepository.findByUniqueId(random);
         employee.setUniqueId(null);
         employeeRepository.save(employee);
         return employee.getEmpId();
@@ -117,12 +121,30 @@ public class EmployeeService
         return true;
     }
 
-    public Employee getEmployeeByUniqueId(short random)
-    {
-        return employeeRepository.findByUniqueId(random);
-    }
-
     public long getTotalEmployee() {
         return employeeRepository.count();
+    }
+
+    public boolean updateEmployee(Employee empOld, Employee employee) {
+        if(employee.getDesignation()!=null)
+        {
+            if(employeeValidationService.validateDesignation(empOld,employee.getDesignation()))
+                empOld.setDesignation(employee.getDesignation());
+            else
+                return false;
+        }
+        if(employee.getManagerId()!=null)
+        {
+            if(employeeValidationService.validateManager(empOld,this.getEmployeeById(employee.getManagerId())))
+                empOld.setManagerId(employee.getManagerId());
+            else
+                return false;
+        }
+        if(employee.getEmpName()!=null)
+        {
+            empOld.setEmpName(employee.getEmpName());
+        }
+        employeeRepository.save(empOld);
+        return true;
     }
 }
