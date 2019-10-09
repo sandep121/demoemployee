@@ -1,14 +1,15 @@
 package com.sandeep.demoemployee.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.lang.Nullable;
 
 public class CrudeEmployee
 {
+    @JsonIgnore
     private Integer empId;
     private Integer managerId;
     private String empName;
     private String designation;
-    private boolean replace;
     public CrudeEmployee(Integer empId, Integer managerId, String empName, String designation) {
         this.empId = empId;
         this.managerId = managerId;
@@ -23,14 +24,6 @@ public class CrudeEmployee
         this.managerId = managerId;
         this.empName = empName;
         this.designation = designation;
-    }
-
-    public boolean isReplace() {
-        return replace;
-    }
-
-    public void setReplace(boolean replace) {
-        this.replace = replace;
     }
 
     public Integer getEmpId() {

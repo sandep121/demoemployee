@@ -2,6 +2,7 @@ package com.sandeep.demoemployee.controller;
 
 import com.sandeep.demoemployee.entity.CrudeEmployee;
 import com.sandeep.demoemployee.entity.Employee;
+import com.sandeep.demoemployee.entity.NewEmployee;
 import com.sandeep.demoemployee.service.EmployeeService;
 import com.sandeep.demoemployee.service.EmployeeValidationService;
 import io.swagger.annotations.Api;
@@ -58,13 +59,10 @@ public class EmployeeController
     {
         //crude is needed for designation field
         Employee employee=employeeService.getEmpFromCrudeEmp(crudeEmployee);
-        boolean isValidEmpId= !validationService.employeeAlreadyExists(employee.getEmpId());
+        if(!validationService.validateEntry(employee))
+            return new ResponseEntity<>("missing fields", HttpStatus.BAD_REQUEST);
         boolean isValidParent=validationService.parentIsValid(employee);
-        if(!isValidEmpId)
-        {
-            return new ResponseEntity<>("Employee already exists.\nYou can keep empId field empty", HttpStatus.BAD_REQUEST);
-        }
-        else if(!isValidParent)
+        if(!isValidParent)
         {
             return new ResponseEntity<>("Invalid superior", HttpStatus.BAD_REQUEST);
         }
@@ -77,23 +75,22 @@ public class EmployeeController
 
         return new ResponseEntity<>("Employee added successfully",HttpStatus.OK);
     }
-    @PutMapping
-    public ResponseEntity<String> updateEmployee(@RequestBody CrudeEmployee crudeEmployee)
+    @PutMapping("/{id}")
+    public ResponseEntity<String> updateEmployee(@RequestBody NewEmployee crudeEmployee, @PathVariable int id)
     {
-        System.out.println(crudeEmployee.isReplace());
         Employee empOld=employeeService.getEmpFromCrudeEmp(crudeEmployee);
-        //check if the employee exists or not
-        if(!employeeService.employeeExists(empOld.getEmpId()))
+        empOld.setEmpId(id);
+        if(!employeeService.employeeExists(empOld.getEmpId()))                              //check if the employee exists or not
         {
             return new ResponseEntity<>("Employee not found", HttpStatus.NOT_FOUND);
         }
-        else if(!validationService.parentIsValid(empOld))
-        {
-            return new ResponseEntity<>("Invalid superior",HttpStatus.CONFLICT);
-        }
+
+
         else if(crudeEmployee.isReplace())
         {
             Employee empNew=new Employee(empOld);
+            if(!validationService.validateEntry(empNew))
+                return new ResponseEntity<>("missing feilds",HttpStatus.BAD_REQUEST);
             if(employeeService.getEmployeeById(empOld.getEmpId()).getDesignation().getDsgnId() != empNew.getDesignation().getDsgnId()
                     && (empNew.getDesignation().getDsgnId()==1
                     || employeeService.getEmployeeById(empOld.getEmpId()).getDesignation().getDsgnId() == 1))
@@ -104,11 +101,16 @@ public class EmployeeController
             employeeService.deleteEmployee(empOld.getEmpId());
             return new ResponseEntity<>("Employee replaced successfully",HttpStatus.OK);
         }
-        else if(employeeService.updateEmployee(empOld, employeeService.getEmployeeById(empOld.getEmpId())))
+
+
+        else
         {
-            return new ResponseEntity<>("Employee updated successfully",HttpStatus.OK);
+            String result=employeeService.updateEmployee(empOld, employeeService.getEmployeeById(empOld.getEmpId()));
+            if(result==null)
+                return new ResponseEntity<>("Employee updated successfully",HttpStatus.OK);
+            else
+                return new ResponseEntity<>(result,HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>("Invalid Request",HttpStatus.BAD_REQUEST);
     }
 
     @DeleteMapping("/{id}")

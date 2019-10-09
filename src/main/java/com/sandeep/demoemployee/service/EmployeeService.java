@@ -1,6 +1,7 @@
 package com.sandeep.demoemployee.service;
 
 import com.sandeep.demoemployee.entity.CrudeEmployee;
+import com.sandeep.demoemployee.entity.Designation;
 import com.sandeep.demoemployee.entity.Employee;
 import com.sandeep.demoemployee.repository.DesignationRepository;
 import com.sandeep.demoemployee.repository.EmployeeRepository;
@@ -38,7 +39,10 @@ public class EmployeeService
             employee.setEmpId(crudeEmployee.getEmpId());
         employee.setManagerId(crudeEmployee.getManagerId());
         employee.setEmpName(crudeEmployee.getEmpName());
-        employee.setDesignation(designationRepository.findAllByRoleLike(crudeEmployee.getDesignation().toUpperCase()).get(0));
+        Designation designation=null;
+        if(crudeEmployee.getDesignation()!=null)
+            designation=designationRepository.getByRoleLike(crudeEmployee.getDesignation().toUpperCase());
+        employee.setDesignation(designation);
         return employee;
     }
 
@@ -81,14 +85,8 @@ public class EmployeeService
         emp.add(employeeRepository.findById(id).orElseGet(Employee::new));
         return emp;
     }
-/****** to be improved      *****/
     public int addEmployee(Employee employee)
     {
-        short random = (short) (Math.random());
-        employee.setUniqueId(random);
-        employeeRepository.save(employee);
-        employee=employeeRepository.findByUniqueId(random);
-        employee.setUniqueId(null);
         employeeRepository.save(employee);
         return employee.getEmpId();
     }
@@ -125,26 +123,29 @@ public class EmployeeService
         return employeeRepository.count();
     }
 
-    public boolean updateEmployee(Employee empOld, Employee employee) {
+    public String updateEmployee(Employee employee, Employee empOld) {
         if(employee.getDesignation()!=null)
         {
             if(employeeValidationService.validateDesignation(empOld,employee.getDesignation()))
+            {
                 empOld.setDesignation(employee.getDesignation());
+            }
             else
-                return false;
+                return "Invalid Designation";
         }
         if(employee.getManagerId()!=null)
         {
             if(employeeValidationService.validateManager(empOld,this.getEmployeeById(employee.getManagerId())))
                 empOld.setManagerId(employee.getManagerId());
             else
-                return false;
+                return "Invalid Manager";
         }
         if(employee.getEmpName()!=null)
         {
             empOld.setEmpName(employee.getEmpName());
+            System.out.println(empOld.getEmpName());
         }
         employeeRepository.save(empOld);
-        return true;
+        return null;
     }
 }

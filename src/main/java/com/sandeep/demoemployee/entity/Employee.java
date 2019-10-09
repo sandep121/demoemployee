@@ -16,10 +16,6 @@ public class Employee implements EmployeeInterface {
     private Integer managerId;
     @Column
     private String empName;
-    @Column
-    @Nullable
-    @JsonIgnore
-    private Short uniqueId;
     @ManyToOne
     @JoinColumn(name = "DSGN_ID")
     private Designation designation;
@@ -37,7 +33,6 @@ public class Employee implements EmployeeInterface {
     public Employee(@Nullable Integer managerId, String empName, @Nullable Short uniqueId, Designation designation) {
         this.managerId = managerId;
         this.empName = empName;
-        this.uniqueId = uniqueId;
         this.designation = designation;
     }
 
@@ -45,7 +40,6 @@ public class Employee implements EmployeeInterface {
         this.empId = emp.getEmpId();
         this.managerId = emp.getManagerId();
         this.empName = emp.getEmpName();
-        this.uniqueId = emp.getUniqueId();
         this.designation = emp.getDesignation();
     }
 
@@ -84,12 +78,4 @@ public class Employee implements EmployeeInterface {
         this.empName = empName;
     }
 
-    @Nullable
-    public Short getUniqueId() {
-        return uniqueId;
-    }
-
-    public void setUniqueId(@Nullable Short uniqueId) {
-        this.uniqueId = uniqueId;
-    }
 }

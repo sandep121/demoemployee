@@ -42,37 +42,26 @@ public class EmployeeValidationService
 
     public boolean validateDesignation(Employee employee, Designation designation)
     {
-        if(employee.getDesignation().getDsgnId()==1 && designation.getDsgnId()!=1)
+        if(employee.getDesignation().getDsgnId()==1 && designation.getDsgnId()!=1)       //cannot demote the director
         {
             return  false;
         }
         List<Employee> children = employeeService.getAllByManagerId(employee.getEmpId());
-        for(Employee emp : children)
+        for(Employee emp : children)                                                     //for children cannot be superior to manager
         {
-            if(emp.getDesignation().getLvlId()>designation.getLvlId())
+            if(emp.getDesignation().getLvlId()<=designation.getLvlId())
                 return false;
         }
         return true;
     }
 
-    public boolean validateEntry(CrudeEmployee crudeEmployee)
+    public boolean validateEntry(Employee employee)
     {
-        Employee employee=new Employee();
-        employee.setEmpId(crudeEmployee.getEmpId());
-        employee.setManagerId(crudeEmployee.getManagerId());
-        employee.setEmpName(crudeEmployee.getEmpName());
-        employee.setDesignation(designationRepository.findAllByRoleLike(crudeEmployee.getDesignation()).get(0));
-        boolean isValidEmpId= !this.employeeAlreadyExists(employee.getEmpId());
-        boolean isValidParent=this.parentIsValid(employee);
-        return (isValidEmpId && isValidParent);
+        return employee.getEmpName() != null && employee.getDesignation() != null && employee.getManagerId() != null;
     }
 
     public boolean validateManager(Employee emp, Employee newManager)
     {
-        if(emp.getDesignation().getLvlId()<newManager.getDesignation().getLvlId())
-        {
-            return true;
-        }
-        return false;
+        return emp.getDesignation().getLvlId() >= newManager.getDesignation().getLvlId();
     }
 }

@@ -10,5 +10,6 @@ import java.util.List;
 @Repository
 public interface DesignationRepository extends CrudRepository<Designation, Integer>
 {
-    List<Designation> findAllByRoleLike(String str);
+    boolean existsByRoleLike(String string);
+    Designation getByRoleLike(String str);
 }
