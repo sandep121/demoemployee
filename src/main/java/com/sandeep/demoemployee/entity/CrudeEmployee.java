@@ -1,38 +1,24 @@
 package com.sandeep.demoemployee.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.springframework.lang.Nullable;
-
 public class CrudeEmployee
 {
-    @JsonIgnore
-    private Integer empId;
     private Integer managerId;
     private String empName;
     private String designation;
-    public CrudeEmployee(Integer empId, Integer managerId, String empName, String designation) {
-        this.empId = empId;
+    public CrudeEmployee(Integer managerId, String empName, String designation) {
         this.managerId = managerId;
         this.empName = empName;
         this.designation = designation;
+    }
+
+    public CrudeEmployee(Integer managerId, String empName) {
+        this.managerId = managerId;
+        this.empName = empName;
     }
 
     public CrudeEmployee() {
     }
 
-    public CrudeEmployee(int managerId, String empName, String designation) {
-        this.managerId = managerId;
-        this.empName = empName;
-        this.designation = designation;
-    }
-
-    public Integer getEmpId() {
-        return empId;
-    }
-
-    public void setEmpId(Integer empId) {
-        this.empId = empId;
-    }
 
     public Integer getManagerId() {
         return managerId;
@@ -61,7 +47,6 @@ public class CrudeEmployee
     @Override
     public String toString() {
         return "CrudeEmployee{" +
-                "empId=" + empId +
                 ", managerId=" + managerId +
                 ", empName='" + empName + '\'' +
                 ", designation='" + designation + '\'' +

@@ -33,10 +33,6 @@ public class EmployeeService
     public Employee getEmpFromCrudeEmp(CrudeEmployee crudeEmployee)
     {
         Employee employee=new Employee();
-        if(crudeEmployee.getEmpId()==null)
-            employee.setEmpId(0);
-        else
-            employee.setEmpId(crudeEmployee.getEmpId());
         employee.setManagerId(crudeEmployee.getManagerId());
         employee.setEmpName(crudeEmployee.getEmpName());
         Designation designation=null;
@@ -70,11 +66,13 @@ public class EmployeeService
 
     public List<Employee> getColleague(Integer id)
     {
-        id=this.getEmployeeById(id).getManagerId();
-        if (null == id) {
+        Employee emp=this.getEmployeeById(id);
+        if (null == emp.getManagerId()) {
             return null;
         } else {
-            return employeeRepository.findAllByManagerId(id);
+            List <Employee> employees=employeeRepository.findAllByManagerId(id);
+            employees.remove(emp);
+            return employees;
         }
     }
 
@@ -88,6 +86,7 @@ public class EmployeeService
     public int addEmployee(Employee employee)
     {
         employeeRepository.save(employee);
+        System.out.println(employee.getEmpId());
         return employee.getEmpId();
     }
 

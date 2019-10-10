@@ -7,6 +7,11 @@ public class NewEmployee extends CrudeEmployee
     public NewEmployee() {
     }
 
+    public NewEmployee(Integer managerId, String empName, String designation, boolean replace) {
+        super(managerId, empName, designation);
+        this.replace = replace;
+    }
+
     public boolean isReplace() {
         return replace;
     }

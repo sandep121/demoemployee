@@ -57,6 +57,8 @@ public class EmployeeValidationService
 
     public boolean validateEntry(Employee employee)
     {
+        if(employee.getDesignation()!=null && employee.getDesignation().getDsgnId()==1)
+            return employee.getEmpName() != null && employee.getManagerId() == null;
         return employee.getEmpName() != null && employee.getDesignation() != null && employee.getManagerId() != null;
     }
 
