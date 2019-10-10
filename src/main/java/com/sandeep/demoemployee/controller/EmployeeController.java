@@ -7,8 +7,6 @@ import com.sandeep.demoemployee.service.EmployeeService;
 import com.sandeep.demoemployee.service.EmployeeValidationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +43,7 @@ public class EmployeeController
         employeeResponse.put("Employee", employeeService.findAllByEmpId(id));
         employeeResponse.put("Colleague", employeeService.getColleague(id));
         employeeResponse.put("Manager", employeeService.getManager(id));
+        employeeResponse.put("Reporting to", employeeService.getAllByManagerId(id));
         return new ResponseEntity<>(employeeResponse, HttpStatus.OK);
     }
     @GetMapping("/CountDsgId={id}")
@@ -87,13 +86,15 @@ public class EmployeeController
         else if(crudeEmployee.isReplace())
         {
             Employee empNew=new Employee(empOld);
+
+            if(!validationService.validateEntry(empNew))                    //to check if all the required fields are available
+            return new ResponseEntity<>("missing fields",HttpStatus.BAD_REQUEST);
+
             if(employeeService.getEmployeeById(id).getDesignation().getDsgnId() != empNew.getDesignation().getDsgnId()
                     && (empNew.getDesignation().getDsgnId()==1
                     || employeeService.getEmployeeById(id).getDesignation().getDsgnId() == 1))
                 return new ResponseEntity<>("There should be one and only one Director in the organisation", HttpStatus.BAD_REQUEST);
 
-            if(!validationService.validateEntry(empNew))
-                return new ResponseEntity<>("missing fields",HttpStatus.BAD_REQUEST);
 
             if(validationService.parentIsValid(empNew))
             {
@@ -108,8 +109,9 @@ public class EmployeeController
 
         else
         {
-            System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-            String result=employeeService.updateEmployee(empOld, employeeService.getEmployeeById(id));
+            String result;
+            Employee empUpdate=empOld;
+            result=employeeService.updateEmployee(empUpdate, employeeService.getEmployeeById(id));
             if(result==null)
                 return new ResponseEntity<>("Employee updated successfully",HttpStatus.OK);
             else
@@ -124,7 +126,7 @@ public class EmployeeController
         {
             return new ResponseEntity<>("The employee does not exist", HttpStatus.NOT_FOUND);
         }
-        else if(employeeService.getEmployeeById(id).getDesignation().getDsgnId()==1 && employeeService.getTotalEmployee()!=1)
+        else if(employeeService.getEmployeeById(id).getDesignation().getDsgnId()==1 && employeeService.getTotalEmployeeCount()!=1)
         {
 
             return new ResponseEntity<>("You cannot fire the director!!!",HttpStatus.FORBIDDEN);

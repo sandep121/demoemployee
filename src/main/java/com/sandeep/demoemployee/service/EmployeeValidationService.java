@@ -7,6 +7,7 @@ import com.sandeep.demoemployee.repository.DesignationRepository;
 import com.sandeep.demoemployee.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.AbstractTransactionManagementConfiguration;
 
 import java.util.Iterator;
 import java.util.List;
@@ -42,7 +43,7 @@ public class EmployeeValidationService
 
     public boolean validateDesignation(Employee employee, Designation designation)
     {
-        if(employee.getDesignation().getDsgnId()==1 && designation.getDsgnId()!=1)       //cannot demote the director
+        if(designation.getDsgnId() != employee.getDesignation().getDsgnId() && (designation.getDsgnId()==1 || employee.getDesignation().getDsgnId()==1))       //cannot demote the director
         {
             return  false;
         }
@@ -64,6 +65,8 @@ public class EmployeeValidationService
 
     public boolean validateManager(Employee emp, Employee newManager)
     {
+        if(newManager==null)
+            return false;
         return emp.getDesignation().getLvlId() >= newManager.getDesignation().getLvlId();
     }
 }

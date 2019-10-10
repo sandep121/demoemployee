@@ -46,7 +46,8 @@ public class EmployeeService
     {
         if( id != 0 )
         {
-            return employeeRepository.findAllByManagerId(id);
+
+            return employeeRepository.findAllByManagerIdOrderByDesignation_lvlIdAscEmpNameAsc(id);
         }
         else
         {
@@ -67,10 +68,11 @@ public class EmployeeService
     public List<Employee> getColleague(Integer id)
     {
         Employee emp=this.getEmployeeById(id);
+        id=emp.getManagerId();
         if (null == emp.getManagerId()) {
             return null;
         } else {
-            List <Employee> employees=employeeRepository.findAllByManagerId(id);
+            List <Employee> employees=employeeRepository.findAllByManagerIdOrderByDesignation_lvlIdAscEmpNameAsc(id);
             employees.remove(emp);
             return employees;
         }
@@ -118,14 +120,15 @@ public class EmployeeService
         return true;
     }
 
-    public long getTotalEmployee() {
+    public long getTotalEmployeeCount() {
         return employeeRepository.count();
     }
 
     public String updateEmployee(Employee employee, Employee empOld) {
+        employee.setEmpId(empOld.getEmpId());
         if(employee.getDesignation()!=null)
         {
-            if(employeeValidationService.validateDesignation(empOld,employee.getDesignation()))
+            if(employeeValidationService.validateDesignation(employee,empOld.getDesignation()))
             {
                 empOld.setDesignation(employee.getDesignation());
             }
