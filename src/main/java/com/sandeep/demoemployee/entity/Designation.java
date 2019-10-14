@@ -1,18 +1,19 @@
 package com.sandeep.demoemployee.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 
 @Entity
-
 public class Designation
 {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @JsonIgnore
     private int dsgnId;
+    @Column
+    @JsonProperty(value = "jobTitle")
     private String role;
     @JsonIgnore
     private float lvlId;

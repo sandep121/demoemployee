@@ -1,6 +1,6 @@
 package com.sandeep.demoemployee.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.*;
 import com.sandeep.demoemployee.service.EmployeeInterface;
 import org.springframework.lang.Nullable;
 
@@ -9,14 +9,18 @@ import javax.persistence.*;
 @Entity
 public class Employee implements EmployeeInterface {
     @Id
+    @JsonProperty(value = "id")
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Integer empId;
     @Column
     @Nullable
+    @JsonIgnore
     private Integer managerId;
     @Column
+    @JsonProperty(value = "name")
     private String empName;
     @ManyToOne
+    @JsonUnwrapped
     @JoinColumn(name = "DSGN_ID")
     private Designation designation;
 
@@ -30,7 +34,7 @@ public class Employee implements EmployeeInterface {
         this.designation = designation;
     }
 
-    public Employee(@Nullable Integer managerId, String empName, @Nullable Short uniqueId, Designation designation) {
+    public Employee(@Nullable Integer managerId, String empName, Designation designation) {
         this.managerId = managerId;
         this.empName = empName;
         this.designation = designation;

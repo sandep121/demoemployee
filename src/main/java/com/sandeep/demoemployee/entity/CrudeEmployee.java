@@ -1,9 +1,13 @@
 package com.sandeep.demoemployee.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class CrudeEmployee
 {
     private Integer managerId;
+    @JsonProperty("name")
     private String empName;
+    @JsonProperty("jobTitle")
     private String designation;
     public CrudeEmployee(Integer managerId, String empName, String designation) {
         this.managerId = managerId;

@@ -4,7 +4,7 @@ import com.sandeep.demoemployee.entity.CrudeEmployee;
 import com.sandeep.demoemployee.entity.Employee;
 import com.sandeep.demoemployee.entity.NewEmployee;
 import com.sandeep.demoemployee.service.EmployeeService;
-import com.sandeep.demoemployee.service.EmployeeValidationService;
+import com.sandeep.demoemployee.util.Messages;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,29 +22,40 @@ import java.util.Map;
 @Api
 public class EmployeeController
 {
-    @Autowired
     private EmployeeService employeeService;
+    private Messages messages;
     @Autowired
-    private EmployeeValidationService validationService;
-
+    public EmployeeController(EmployeeService employeeService, Messages messages) {
+        this.employeeService = employeeService;
+        this.messages = messages;
+    }
 
     @ApiOperation(value = "View a list of available employees", response = List.class)
-    @GetMapping("/")
-    public List<Employee> getAllEmployee()
+    @GetMapping
+    public ResponseEntity getAllEmployee()
     {
-        return employeeService.getAllEmployees();
+        List <Employee> allEmployees=new ArrayList<>(employeeService.getAllEmployees());
+        return new ResponseEntity<>(allEmployees,HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity findAllByEmpId(@PathVariable int id)
     {
-        if(!employeeService.employeeExists(id))
-            return new ResponseEntity<>( "Employee does not exist",HttpStatus.NOT_FOUND);
-        Map<String,List<Employee>> employeeResponse=new HashMap<>();
-        employeeResponse.put("Employee", employeeService.findAllByEmpId(id));
-        employeeResponse.put("Colleague", employeeService.getColleague(id));
-        employeeResponse.put("Manager", employeeService.getManager(id));
-        employeeResponse.put("Reporting to", employeeService.getAllByManagerId(id));
+        if(id<1)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if(employeeService.employeeExists(id))
+            return new ResponseEntity<>( messages.getMessage("EMPLOYEE_NOT_FOUND"),HttpStatus.NOT_FOUND);
+        Object subOrdinates=employeeService.getAllByManagerId(id);
+        Object colleague=employeeService.getColleague(id);
+        Object manager=employeeService.getManager(id);
+        Map<String,Object> employeeResponse=new HashMap<>();
+        employeeResponse.put("employee", employeeService.getEmployeeById(id));
+        if(colleague!=null)
+            employeeResponse.put("colleagues", colleague);
+        if(manager!=null)
+            employeeResponse.put("manager", manager);
+        if(subOrdinates!=null)
+            employeeResponse.put("subordinates", subOrdinates );
         return new ResponseEntity<>(employeeResponse, HttpStatus.OK);
     }
     @GetMapping("/CountDsgId={id}")
@@ -56,38 +68,41 @@ public class EmployeeController
     public ResponseEntity<String> addEmployee(@RequestBody CrudeEmployee crudeEmployee)
     {
         //crude is needed for designation field
+        if(crudeEmployee.getEmpName()==null || crudeEmployee.getEmpName().matches(".*\\d.*"))
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         Employee employee=employeeService.getEmpFromCrudeEmp(crudeEmployee);
-        if(!validationService.validateEntry(employee))
-            return new ResponseEntity<>("missing or invalid values", HttpStatus.BAD_REQUEST);
-        boolean isValidParent=validationService.parentIsValid(employee);
+        if(employeeService.validateEntry(employee))
+            return new ResponseEntity(employee, HttpStatus.BAD_REQUEST);
+        boolean isValidParent=employeeService.parentIsValid(employee);
         if(employee.getDesignation().getDsgnId()==1 && employeeService.getTotalEmployeeByDesignation(1)!=0)
         {
-            return new ResponseEntity<>("One Director is enough for the organisation", HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>("One Director is enough for the organisation", HttpStatus.BAD_REQUEST);
         }
         else if(!isValidParent)
         {
             return new ResponseEntity<>("Invalid superior", HttpStatus.BAD_REQUEST);
         }
-
         else
-            employeeService.addEmployee(employee);
-
-        return new ResponseEntity<>("Employee added successfully",HttpStatus.OK);
+        return new ResponseEntity(employeeService.getEmployeeById(employeeService.addEmployee(employee)),HttpStatus.CREATED);
     }
     @PutMapping("/{id}")
     public ResponseEntity<String> updateEmployee(@RequestBody NewEmployee crudeEmployee, @PathVariable int id)
     {
+        if(id<1)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if(crudeEmployee.getEmpName()!=null&&crudeEmployee.getEmpName().matches(".*\\d.*"))
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         Employee empOld=employeeService.getEmpFromCrudeEmp(crudeEmployee);
-        if(!employeeService.employeeExists(id))                              //check if the employee exists or not
+        if(employeeService.employeeExists(id))                              //check if the employee exists or not
         {
-            return new ResponseEntity<>("Employee not found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Employee not found", HttpStatus.BAD_REQUEST);
         }
-
         else if(crudeEmployee.isReplace())
         {
             Employee empNew=new Employee(empOld);
-
-            if(!validationService.validateEntry(empNew))                    //to check if all the required fields are available
+            if(empNew.getManagerId()==null)
+                empNew.setManagerId(employeeService.getEmployeeById(id).getManagerId());
+            if(employeeService.validateEntry(empNew))                    //to check if all the required fields are available
             return new ResponseEntity<>("missing fields",HttpStatus.BAD_REQUEST);
 
             if(employeeService.getEmployeeById(id).getDesignation().getDsgnId() != empNew.getDesignation().getDsgnId()
@@ -96,11 +111,12 @@ public class EmployeeController
                 return new ResponseEntity<>("There should be one and only one Director in the organisation", HttpStatus.BAD_REQUEST);
 
 
-            if(validationService.parentIsValid(empNew))
+            if(employeeService.parentIsValid(empNew))
             {
-                employeeService.updateManager(id,employeeService.addEmployee(empNew));
+                empNew.setEmpId(employeeService.addEmployee(empNew));
+                //employeeService.updateManager(id,empNew.getEmpId());
                 employeeService.deleteEmployee(id);
-                return new ResponseEntity<>("Employee replaced successfully",HttpStatus.OK);
+                return this.findAllByEmpId(empNew.getEmpId());
             }
             else
                 return new ResponseEntity<>("organisation hierarchy violated",HttpStatus.BAD_REQUEST);
@@ -110,10 +126,9 @@ public class EmployeeController
         else
         {
             String result;
-            Employee empUpdate=empOld;
-            result=employeeService.updateEmployee(empUpdate, employeeService.getEmployeeById(id));
+            result=employeeService.updateEmployee(empOld, employeeService.getEmployeeById(id));
             if(result==null)
-                return new ResponseEntity<>("Employee updated successfully",HttpStatus.OK);
+                return this.findAllByEmpId(id);
             else
                 return new ResponseEntity<>(result,HttpStatus.BAD_REQUEST);
         }
@@ -122,18 +137,20 @@ public class EmployeeController
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteEmployee(@PathVariable int id)
     {
-        if(!employeeService.employeeExists(id))
+        if(id<1)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if(employeeService.employeeExists(id))
         {
             return new ResponseEntity<>("The employee does not exist", HttpStatus.NOT_FOUND);
         }
         else if(employeeService.getEmployeeById(id).getDesignation().getDsgnId()==1 && employeeService.getTotalEmployeeCount()!=1)
         {
 
-            return new ResponseEntity<>("You cannot fire the director!!!",HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>("You cannot fire the director!!!",HttpStatus.BAD_REQUEST);
         }
         else if(employeeService.deleteEmployee(id))
         {
-            return new ResponseEntity<>("Deleted", HttpStatus.OK);
+            return new ResponseEntity<>("Deleted", HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>("Unknown error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
     }

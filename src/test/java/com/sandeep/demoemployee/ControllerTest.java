@@ -1,16 +1,12 @@
 package com.sandeep.demoemployee;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.sandeep.demoemployee.entity.CrudeEmployee;
-import com.sandeep.demoemployee.entity.Employee;
 import com.sandeep.demoemployee.entity.NewEmployee;
-import javafx.application.Application;
-import org.hamcrest.Matchers;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,7 +22,6 @@ import org.testng.annotations.Test;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.testng.Assert.*;
 @EnableWebMvc
 @WebAppConfiguration
 @ContextConfiguration(classes = {DemoEmployeeApplication.class})
