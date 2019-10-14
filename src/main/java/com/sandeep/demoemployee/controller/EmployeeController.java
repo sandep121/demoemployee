@@ -65,7 +65,7 @@ public class EmployeeController
     }
 
     @PostMapping
-    public ResponseEntity<String> addEmployee(@RequestBody CrudeEmployee crudeEmployee)
+    public ResponseEntity addEmployee(@RequestBody CrudeEmployee crudeEmployee)
     {
         //crude is needed for designation field
         if(crudeEmployee.getEmpName()==null || crudeEmployee.getEmpName().matches(".*\\d.*"))
@@ -83,10 +83,10 @@ public class EmployeeController
             return new ResponseEntity<>("Invalid superior", HttpStatus.BAD_REQUEST);
         }
         else
-        return new ResponseEntity(employeeService.getEmployeeById(employeeService.addEmployee(employee)),HttpStatus.CREATED);
+            return new ResponseEntity(employeeService.getEmployeeById(employeeService.addEmployee(employee)),HttpStatus.CREATED);
     }
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateEmployee(@RequestBody NewEmployee crudeEmployee, @PathVariable int id)
+    public ResponseEntity updateEmployee(@RequestBody NewEmployee crudeEmployee, @PathVariable int id)
     {
         if(id<1)
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -114,7 +114,7 @@ public class EmployeeController
             if(employeeService.parentIsValid(empNew))
             {
                 empNew.setEmpId(employeeService.addEmployee(empNew));
-                //employeeService.updateManager(id,empNew.getEmpId());
+                employeeService.updateManager(id,empNew.getEmpId());
                 employeeService.deleteEmployee(id);
                 return this.findAllByEmpId(empNew.getEmpId());
             }
@@ -123,7 +123,7 @@ public class EmployeeController
         }
 
 
-        else
+        else if(employeeService.validatePutFalse(crudeEmployee,empOld))
         {
             String result;
             result=employeeService.updateEmployee(empOld, employeeService.getEmployeeById(id));
@@ -132,6 +132,8 @@ public class EmployeeController
             else
                 return new ResponseEntity<>(result,HttpStatus.BAD_REQUEST);
         }
+        else
+            return new ResponseEntity<>("No data to update",HttpStatus.BAD_REQUEST);
     }
 
     @DeleteMapping("/{id}")

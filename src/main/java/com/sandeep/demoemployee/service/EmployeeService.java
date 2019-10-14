@@ -204,4 +204,13 @@ public class EmployeeService
             return false;
         return emp.getDesignation().getLvlId() >= newManager.getDesignation().getLvlId();
     }
+
+    public boolean validatePutFalse(CrudeEmployee crudeEmployee, Employee employee)
+    {
+        if(crudeEmployee.getDesignation()!=null && employee.getDesignation()==null)
+        {
+            return false;
+        }
+        return employee.getDesignation()!=null || employee.getManagerId()!=null || employee.getEmpName()!=null;
+    }
 }
